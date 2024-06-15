@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YouTube Audio Segmenter</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mb-4">YouTube Audio Segmenter</h2>
+        <form id="audioForm">
+            <div class="form-group">
+                <label for="ytLink">YouTube Link:</label>
+                <input type="text" class="form-control" id="ytLink">
+            </div>
+            <div class="form-group">
+                <label for="startTime">Start Time (sec):</label>
+                <input type="number" class="form-control" id="startTime">
+            </div>
+            <div class="form-group">
+                <label for="endTime">End Time (sec):</label>
+                <input type="number" class="form-control" id="endTime">
+            </div>
+            <div class="form-group">
+                <label for="numClips">Number of Clips:</label>
+                <input type="number" class="form-control" id="numClips">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="processAudio()">Submit</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function processAudio() {
+            const ytLink = document.getElementById('ytLink').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const numClips = document.getElementById('numClips').value;
+
+            fetch('/process-audio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: ytLink, startTime: parseInt(startTime), endTime: parseInt(endTime), numClips: parseInt(numClips) })
+            }).then(response => {
+                if (response.ok) {
+                    response.blob().then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = 'output_audio.mp3';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    });
+                } else {
+                    alert('Failed to process audio.');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Error processing audio.');
+            });
+        }
+    </script>
+</body>
+</html>
