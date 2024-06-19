@@ -34,6 +34,10 @@
                 <label for="numClips">Number of Clips:</label>
                 <input type="number" class="form-control" id="numClips">
             </div>
+            <div class="form-group">
+                <label for="fileName">File Name (支持中文):</label>
+                <input type="text" class="form-control" id="fileName">
+            </div>           
             <button type="button" class="btn btn-primary" onclick="processAudio()">Submit</button>
         </form>
     </div>
@@ -47,13 +51,20 @@
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
             const numClips = document.getElementById('numClips').value;
+            const fileName = document.getElementById('fileName').value;
 
             fetch('/process-audio', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ url: ytLink, startTime: parseInt(startTime), endTime: parseInt(endTime), numClips: parseInt(numClips) })
+                body: JSON.stringify({ 
+                    url: ytLink, 
+                    startTime: parseInt(startTime), 
+                    endTime: parseInt(endTime), 
+                    numClips: parseInt(numClips),
+                    fileName: fileName
+                })
             }).then(response => {
                 if (response.ok) {
                     response.blob().then(blob => {
@@ -61,7 +72,7 @@
                         const a = document.createElement('a');
                         a.style.display = 'none';
                         a.href = url;
-                        a.download = 'output_audio.mp3';
+                        a.download = fileName ? `${fileName}.mp3` : 'output_audio.mp3';
                         document.body.appendChild(a);
                         a.click();
                         window.URL.revokeObjectURL(url);
