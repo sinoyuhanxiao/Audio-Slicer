@@ -23,12 +23,12 @@
                 <input type="text" class="form-control" id="ytLink">
             </div>
             <div class="form-group">
-                <label for="startTime">Start Time (sec):</label>
-                <input type="number" class="form-control" id="startTime">
+                <label for="startTime">Start Time:</label>
+                <input type="text" class="form-control" id="startTime" placeholder="mm:ss">
             </div>
             <div class="form-group">
-                <label for="endTime">End Time (sec):</label>
-                <input type="number" class="form-control" id="endTime">
+                <label for="endTime">End Time:</label>
+                <input type="text" class="form-control" id="endTime" placeholder="mm:ss">
             </div>
             <div class="form-group">
                 <label for="numClips">Number of Clips:</label>
@@ -44,8 +44,8 @@
     <script>
         function processAudio() {
             const ytLink = document.getElementById('ytLink').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
+            const startTime = convertTimeToSeconds(document.getElementById('startTime').value);
+            const endTime = convertTimeToSeconds(document.getElementById('endTime').value);
             const numClips = document.getElementById('numClips').value;
 
             fetch('/process-audio', {
@@ -73,6 +73,17 @@
                 console.error('Error:', error);
                 alert('Error processing audio.');
             });
+        }
+
+        function convertTimeToSeconds(timeString) {
+            const parts = timeString.split(':');
+            if (parts.length === 2) {
+                const minutes = parseInt(parts[0]);
+                const seconds = parseInt(parts[1]);
+                return (minutes * 60) + seconds;
+            } else {
+                return 0; // Handle error or invalid format appropriately
+            }
         }
     </script>
 </body>
