@@ -50,7 +50,7 @@ app.post('/process-audio', async (req, res) => {
                         console.log(`stderr: ${stderr}`);
                     }
 
-                    concatenateClips(clipFileName, silenceFileName, outputFileName, numClips, res);
+                    concatenateClips(tempFileName, clipFileName, silenceFileName, outputFileName, numClips, res);
                 });
             })
             .on('error', (error) => {
@@ -65,7 +65,7 @@ app.post('/process-audio', async (req, res) => {
     });
 });
 
-function concatenateClips(clipFileName, silenceFileName, outputFileName, numClips, res) {
+function concatenateClips(tempFileName, clipFileName, silenceFileName, outputFileName, numClips, res) {
     let ffmpegCommand = ffmpeg();
 
     // Adding all necessary inputs
@@ -90,6 +90,7 @@ function concatenateClips(clipFileName, silenceFileName, outputFileName, numClip
         .output(outputFileName)
         .on('end', () => {
             res.download(outputFileName, () => {
+                fs.unlinkSync(tempFileName);  // Clean up the base file
                 fs.unlinkSync(clipFileName);  // Clean up clip file
                 fs.unlinkSync(silenceFileName);  // Clean up silence file
                 fs.unlinkSync(outputFileName);  // Clean up output file
