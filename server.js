@@ -8,10 +8,18 @@ const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/multiple_audios.html', (req, res) => {
+    res.sendFile(__dirname + '/multiple_audios.html');
+});
+
+app.get('/warmups_generator.html', (req, res) => {
+    res.sendFile(__dirname + '/warmups_generator.html');
 });
 
 app.post('/process-audio', async (req, res) => {
@@ -24,13 +32,11 @@ app.post('/process-audio', async (req, res) => {
     const outputFileName = `${baseFileName}_output.mp3`;
     const silenceFileName = `${baseFileName}_silence.mp3`; // Dynamic silence file name
 
-    // Download the video
     const videoStream = ytdl(url, { quality: 'highestaudio', filter: 'audioonly' });
     const writer = fs.createWriteStream(tempFileName);
     videoStream.pipe(writer);
 
     writer.on('finish', () => {
-        // Extract the specific part of the video
         ffmpeg(tempFileName)
             .setStartTime(startTime)
             .duration(clipDuration)
@@ -38,7 +44,6 @@ app.post('/process-audio', async (req, res) => {
             .format('mp3')
             .save(clipFileName)
             .on('end', () => {
-                // Generate silence file dynamically
                 const silenceCommand = `ffmpeg -f lavfi -i anullsrc=r=44100:cl=stereo -t ${silenceDuration} -q:a 9 ${silenceFileName}`;
                 exec(silenceCommand, (error, stdout, stderr) => {
                     if (error) {
@@ -46,10 +51,6 @@ app.post('/process-audio', async (req, res) => {
                         res.status(500).send('Failed to generate silence');
                         return;
                     }
-                    if (stderr) {
-                        console.log(`stderr: ${stderr}`);
-                    }
-
                     concatenateClips(tempFileName, clipFileName, silenceFileName, outputFileName, numClips, res);
                 });
             })
@@ -68,7 +69,6 @@ app.post('/process-audio', async (req, res) => {
 function concatenateClips(tempFileName, clipFileName, silenceFileName, outputFileName, numClips, res) {
     let ffmpegCommand = ffmpeg();
 
-    // Adding all necessary inputs
     for (let i = 0; i < numClips; i++) {
         ffmpegCommand = ffmpegCommand.input(clipFileName);
         if (i < numClips - 1) {
@@ -103,7 +103,6 @@ function concatenateClips(tempFileName, clipFileName, silenceFileName, outputFil
         })
         .run();
 }
-
 
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);

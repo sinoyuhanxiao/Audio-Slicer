@@ -2,21 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>YouTube Audio Segmenter</title>
+    <title>Basic Audio Segmenter</title>
     <!-- Include Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .container {
-            margin-top: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-    </style>
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
+    <div id="navbar-placeholder"></div>
     <div class="container">
-        <h2 class="mb-4">YouTube Audio Segmenter</h2>
+        <h2 class="mb-4">Single Audio Segmenter</h2>
         <form id="audioForm">
             <div class="form-group">
                 <label for="ytLink">YouTube Link:</label>
@@ -46,62 +40,25 @@
         </form>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
     <script>
-        function processAudio() {
-            const ytLink = document.getElementById('ytLink').value;
-            const startTime = convertTimeToSeconds(document.getElementById('startTime').value);
-            const endTime = convertTimeToSeconds(document.getElementById('endTime').value);
-            const numClips = document.getElementById('numClips').value;
-            const clipGap = document.getElementById('clipGap').value;
-            const fileName = document.getElementById('fileName').value;
+        $(function(){
+            $("#navbar-placeholder").load("navbar.html", function() {
+                // Get current page URL
+                const currentPage = window.location.pathname.split('/').pop();
 
-            fetch('/process-audio', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    url: ytLink, 
-                    startTime: parseInt(startTime), 
-                    endTime: parseInt(endTime), 
-                    numClips: parseInt(numClips),
-                    clipGap: parseFloat(clipGap),
-                    fileName: fileName
-                })
-            }).then(response => {
-                if (response.ok) {
-                    response.blob().then(blob => {
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-                        a.download = fileName ? `${fileName}.mp3` : 'output_audio.mp3';
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    });
-                } else {
-                    alert('Failed to process audio.');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Error processing audio.');
+                // Loop through each nav-link
+                $('.nav-link').each(function() {
+                    const linkPage = $(this).attr('href');
+                    if (linkPage === currentPage) {
+                        $(this).addClass('active');
+                    }
+                });
             });
-        }
-
-        function convertTimeToSeconds(timeString) {
-            const parts = timeString.split(':');
-            if (parts.length === 2) {
-                const minutes = parseInt(parts[0]);
-                const seconds = parseInt(parts[1]);
-                return (minutes * 60) + seconds;
-            } else {
-                return 0; // Handle error or invalid format appropriately
-            }
-        }
+        });
     </script>
 </body>
 </html>
