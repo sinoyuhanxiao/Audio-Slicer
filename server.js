@@ -23,8 +23,8 @@ app.get('/warmups_generator.html', (req, res) => {
 });
 
 app.post('/process-audio', async (req, res) => {
-    const { url, startTime, endTime, numClips, clipGap, fileName } = req.body;
-    const clipDuration = endTime - startTime;
+    const { url, startTime, endTime, numClips, clipGap, speed, fileName } = req.body;
+    const clipDuration = (endTime - startTime) / speed;
     const silenceDuration = clipDuration + clipGap; // Calculate the duration for silence according to user input
     const baseFileName = `audio_${Date.now()}`;
     const tempFileName = `${baseFileName}.mp3`;
@@ -35,12 +35,14 @@ app.post('/process-audio', async (req, res) => {
     const videoStream = ytdl(url, { quality: 'highestaudio', filter: 'audioonly' });
     const writer = fs.createWriteStream(tempFileName);
     videoStream.pipe(writer);
+    console.log('clipDuration is ' + clipDuration)
 
     writer.on('finish', () => {
         ffmpeg(tempFileName)
             .setStartTime(startTime)
             .duration(clipDuration)
             .audioCodec('libmp3lame')
+            .audioFilters(`atempo=${speed}`)
             .format('mp3')
             .save(clipFileName)
             .on('end', () => {

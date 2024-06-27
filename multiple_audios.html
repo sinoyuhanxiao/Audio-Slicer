@@ -10,21 +10,58 @@
 <body>
     <div id="navbar-placeholder"></div>
     <div class="container">
-        <h2 class="mb-4">Multiple Audios Page</h2>
-        <!-- Content for Multiple Audios Page -->
+        <h2 class="mb-4">Multiple Audios Concatenation</h2>
+        <form id="audioForm">
+            <div class="form-group">
+                <label for="fileName">File Name (支持中文):</label>
+                <input type="text" class="form-control" id="fileName" placeholder="Give a file name for the whole combined audio...">
+            </div>
+            <div id="audio-containers">
+                <div class="audio-container card mb-3">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="ytLink">YouTube Link:</label>
+                            <input type="text" class="form-control ytLink" placeholder="YouTube Link">
+                        </div>
+                        <div class="form-group">
+                            <label for="startTime">Start Time:</label>
+                            <input type="text" class="form-control startTime" placeholder="mm:ss">
+                        </div>
+                        <div class="form-group">
+                            <label for="endTime">End Time:</label>
+                            <input type="text" class="form-control endTime" placeholder="mm:ss">
+                        </div>
+                        <div class="form-group">
+                            <label for="numClips">Number of Clips:</label>
+                            <input type="number" class="form-control numClips">
+                        </div>
+                        <div class="form-group">
+                            <label for="clipGap">Clip Gap (seconds):</label>
+                            <input type="number" class="form-control clipGap" value="2" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="speed">Speed (0.5x - 2.0x):</label>
+                            <span class="clipDuration ml-2"></span>
+                            <input type="number" class="form-control speed" value="1" min="0.5" max="2.0" step="0.1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="addButton">Add</button>
+        </form>
+        <div class="mt-4">
+            <h4>Total Length of Audio: <span id="totalLength">0</span> seconds</h4>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.sjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="script.js"></script>
     <script>
         $(function(){
             $("#navbar-placeholder").load("navbar.html", function() {
-                // Get current page URL
                 const currentPage = window.location.pathname.split('/').pop();
-
-                // Loop through each nav-link
                 $('.nav-link').each(function() {
                     const linkPage = $(this).attr('href');
                     if (linkPage === currentPage) {
@@ -32,6 +69,96 @@
                     }
                 });
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('addButton').addEventListener('click', addContainer);
+
+            function addContainer() {
+                const container = document.createElement('div');
+                container.className = 'audio-container card mb-3';
+                container.innerHTML = `
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="ytLink">YouTube Link:</label>
+                            <input type="text" class="form-control ytLink" placeholder="YouTube Link">
+                        </div>
+                        <div class="form-group">
+                            <label for="startTime">Start Time:</label>
+                            <input type="text" class="form-control startTime" placeholder="mm:ss">
+                        </div>
+                        <div class="form-group">
+                            <label for="endTime">End Time:</label>
+                            <input type="text" class="form-control endTime" placeholder="mm:ss">
+                        </div>
+                        <div class="form-group">
+                            <label for="numClips">Number of Clips:</label>
+                            <input type="number" class="form-control numClips">
+                        </div>
+                        <div class="form-group">
+                            <label for="clipGap">Clip Gap (seconds):</label>
+                            <input type="number" class="form-control clipGap" value="2" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="speed">Speed (0.5x - 2.0x):</label>
+                            <span class="clipDuration ml-2"></span>
+                            <input type="number" class="form-control speed" value="1" min="0.5" max="2.0" step="0.1">
+                        </div>
+                    </div>
+                `;
+                document.getElementById('audio-containers').appendChild(container);
+                updateTotalLength();
+            }
+
+            document.getElementById('audio-containers').addEventListener('input', function(event) {
+                if (event.target.classList.contains('startTime') ||
+                    event.target.classList.contains('endTime') ||
+                    event.target.classList.contains('speed')) {
+                    updateClipDuration(event.target.closest('.audio-container'));
+                    updateTotalLength();
+                }
+            });
+
+            function updateClipDuration(container) {
+                const startTime = convertTimeToSeconds(container.querySelector('.startTime').value);
+                const endTime = convertTimeToSeconds(container.querySelector('.endTime').value);
+                const speed = parseFloat(container.querySelector('.speed').value);
+
+                if (!isNaN(startTime) && !isNaN(endTime) && !isNaN(speed) && speed > 0) {
+                    const duration = (endTime - startTime) / speed;
+                    container.querySelector('.clipDuration').innerText = `Clip Duration: ${duration.toFixed(2)} seconds`;
+                } else {
+                    container.querySelector('.clipDuration').innerText = '';
+                }
+            }
+
+            function updateTotalLength() {
+                const containers = document.querySelectorAll('.audio-container');
+                let totalLength = 0;
+
+                containers.forEach(container => {
+                    const startTime = convertTimeToSeconds(container.querySelector('.startTime').value);
+                    const endTime = convertTimeToSeconds(container.querySelector('.endTime').value);
+                    const speed = parseFloat(container.querySelector('.speed').value);
+
+                    if (!isNaN(startTime) && !isNaN(endTime) && !isNaN(speed) && speed > 0) {
+                        totalLength += (endTime - startTime) / speed;
+                    }
+                });
+
+                document.getElementById('totalLength').innerText = totalLength.toFixed(2);
+            }
+
+            function convertTimeToSeconds(timeString) {
+                const parts = timeString.split(':');
+                if (parts.length === 2) {
+                    const minutes = parseInt(parts[0]);
+                    const seconds = parseInt(parts[1]);
+                    return (minutes * 60) + seconds;
+                } else {
+                    return 0;
+                }
+            }
         });
     </script>
 </body>
