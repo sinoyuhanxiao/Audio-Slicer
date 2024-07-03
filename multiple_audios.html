@@ -47,18 +47,23 @@
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn btn-primary" id="addButton">Add</button>
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-primary" id="submitButton">Submit</button>
+                <button type="button" class="btn btn-info" id="addButton">Add</button>
+            </div>
         </form>
         <div class="mt-4">
             <h4>Total Length of Audio: <span id="totalLength">0</span> seconds</h4>
         </div>
     </div>
+    <button id="scrollToTopBtn" type="button" class="btn btn-warning" >&#8679;</button>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="script.js"></script>
     <script>
+        // Make nav-link active effect
         $(function(){
             $("#navbar-placeholder").load("navbar.html", function() {
                 const currentPage = window.location.pathname.split('/').pop();
@@ -160,6 +165,28 @@
                 }
             }
         });
+
+        // Get the button
+        let scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+        // When the user scrolls down 20px from the top of the document, show the button
+        window.onscroll = function() {
+            scrollFunction();
+        };
+
+        function scrollFunction() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                scrollToTopBtn.style.display = "block";
+            } else {
+                scrollToTopBtn.style.display = "none";
+            }
+        }
+
+        // When the user clicks on the button, scroll to the top of the document
+        scrollToTopBtn.onclick = function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
     </script>
 </body>
 </html>
