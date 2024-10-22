@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const ytdl = require('ytdl-core');
+// const ytdl = require('ytdl-core');
+const ytdl = require("@distube/ytdl-core");
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const { exec } = require('child_process');
@@ -64,7 +65,8 @@ app.post('/process-audio', async (req, res) => {
 
     writer.on('error', (error) => {
         console.error('Download error:', error);
-        res.status(500).send('Failed to download video');
+        console.error('Error stack:', error.stack);
+        res.status(500).send(`Failed to download video: ${error.message}`);
     });
 });
 
